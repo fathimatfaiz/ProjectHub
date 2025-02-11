@@ -1,22 +1,24 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const AddStudent = () => {
-  const [student, setStudent] = useState({
+  const [student, setStudent] = useState( {
     name: "",
     email: "",
     password: "",
-    registerNo: "",
+    registerno: "",
     address: "",
     category_id: "",
-    image: "",
-   
-    
+    image: ""
+
   });
 
 
 
+
   const [category, setCategory] = useState([]);
+  const navigate = useNavigate()
 
   useEffect(() => {
     axios
@@ -33,15 +35,25 @@ const AddStudent = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    axios.post('http://localhost:3000/auth/add_student', student)
+    const formData = new FormData();
+    formData.append('name', student.name);
+    formData.append('email', student.email);
+    formData.append('password', student.password);
+    formData.append('registerno', student.registerno);
+    formData.append('address', student.address);
+    formData.append('image', student.image);
+    formData.append('category_id', student.category_id);
+
+    axios.post('http://localhost:3000/auth/add_student', formData)
     .then(result => {
       if(result.data.Status) {
-          navigate('/dashboard/employee')
-      } else {
-          alert(result.data.Error)
-      }
+        navigate('/dashboard/student')
+    } else {
+        alert(result.data.Error) 
+    }
   })
-  .catch(err => console.log(err))
+    .catch(err => console.log(err))
+    
   }
 
 
@@ -66,6 +78,7 @@ const AddStudent = () => {
                 setStudent({ ...student, name: e.target.value })}
               />
             </div>
+
             <div className="col-12">
             <label for="inputEmail4" className="form-label">
               Email
@@ -80,6 +93,7 @@ const AddStudent = () => {
                 setStudent({ ...student, email: e.target.value })}
               />
               </div>
+
               <div className="col-12">
             <label for="inputPassword4" className="form-label">
               Password
@@ -92,7 +106,7 @@ const AddStudent = () => {
               onChange={(e) =>
                 setStudent({ ...student, password: e.target.value })}
               />
-               <label for="inputId" className="form-label">
+               <label for="inputRegisterNo" className="form-label">
               Register No
             </label>
             <input
@@ -102,9 +116,10 @@ const AddStudent = () => {
               placeholder="Enter Register Number"
               autoComplete="off"
               onChange={(e) =>
-                setStudent({ ...student, registerNo: e.target.value })}
+                setStudent({ ...student, registerno: e.target.value })}
               />
               </div>
+
               <div className="col-12">
             <label for="inputAddress" className="form-label">
               Address
@@ -119,6 +134,7 @@ const AddStudent = () => {
                 setStudent({ ...student, address: e.target.value })}
               />
               </div>
+
                <div className="col-12">
             <label for="category" className="form-label">
             Category
@@ -131,6 +147,7 @@ const AddStudent = () => {
               })}
             </select>
               </div>
+
               <div className="col-12 mb-3">
             <label className="form-label" for="inputGroupFile01">
               Select Image
@@ -139,18 +156,19 @@ const AddStudent = () => {
               type="file"
               className="form-control rounded-0"
               id="inputGroupFile01"
-              name="image" 
+              name="image"
               onChange={(e) =>
                 setStudent({ ...student, image: e.target.files[0]})}
               />
               </div>
+              
               <div className="col-12">
             <button className='btn btn-success w-100 rounded-0 mb-2'>Add Student</button>
             </div>
         </form>
     </div>
 </div>
-  )
-}
+  );
+};
 
 export default AddStudent

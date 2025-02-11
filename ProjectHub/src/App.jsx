@@ -9,6 +9,9 @@ import Category from './Components/Category'
 import Profile from './Components/Profile'
 import AddCategory from './Components/AddCategory'
 import AddStudent from './Components/AddStudent'
+import Start from './Components/Start'
+import StudentLogin from './Components/StudentLogin'
+
 
 
 
@@ -19,7 +22,9 @@ function App() {
   return (
     <BrowserRouter>
     <Routes>
+      <Route path='/start' element={<Start />}></Route>
       <Route path='/adminlogin' element={<Login />}></Route>
+      <Route path='/student_login' element={<StudentLogin />}></Route>
       <Route path='/dashboard' element={<Dashboard />}>
       <Route path='' element={<Home />}></Route>
       <Route path='/dashboard/students' element={<Student />}></Route>
@@ -27,6 +32,7 @@ function App() {
       <Route path='/dashboard/profile' element={<Profile />}></Route>
       <Route path='/dashboard/add_category' element={<AddCategory />}></Route>
       <Route path='/dashboard/add_student' element={<AddStudent />}></Route>
+      
       </Route>
     </Routes>
     </BrowserRouter>
