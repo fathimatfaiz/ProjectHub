@@ -1,2 +1,73 @@
-#Dependencies
-node_modules/*
+# -----------------------
+# 🔹 Common Node.js & Dependencies
+# -----------------------
+node_modules/
+npm-debug.log*
+yarn-error.log
+pnpm-debug.log*
+
+# -----------------------
+# 🔹 Logs & Temp Files
+# -----------------------
+logs/
+*.log
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# -----------------------
+# 🔹 Environment Files (Sensitive Data)
+# -----------------------
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# -----------------------
+# 🔹 React Frontend (ProjectHub/)
+# -----------------------
+ProjectHub/node_modules/
+ProjectHub/build/
+ProjectHub/.next/  # If using Next.js
+ProjectHub/.cache/  # If using Gatsby
+ProjectHub/public/static/
+ProjectHub/.parcel-cache/
+
+# -----------------------
+# 🔹 Express Backend (Server/)
+# -----------------------
+Server/node_modules/
+Server/dist/
+Server/.cache/
+
+# -----------------------
+# 🔹 IDE & OS-Specific Files
+# -----------------------
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# -----------------------
+# 🔹 Miscellaneous
+# -----------------------
+.npm/
+.yarn/
+.yarn-integrity
+.eslintcache
+.cache
+.next/
+out/
+coverage/
+public/
+serverless/
+.dynamodb/
+.fusebox/
+
