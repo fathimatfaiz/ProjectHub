@@ -1,20 +1,22 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
-const AddStudent = () => {
+
+const EditStudent = () => {
+  const {id} = useParams()
   const [student, setStudent] = useState({
     name: "",
     email: "",
-    password: "",
     registerno: "",
     address: "",
     category_id: "",
-    image: null, // Ensure null as default for file input
+    
   });
 
   const [categories, setCategories] = useState([]);
-  const navigate = useNavigate();
+  const navigate = useNavigate()
+
 
   useEffect(() => {
     axios
@@ -27,36 +29,40 @@ const AddStudent = () => {
         }
       })
       .catch((err) => console.error("Error fetching categories:", err));
+
+      axios.get('http://localhost:3000/auth/student/'+id)
+      .then(result => {
+          setStudent({
+            ...student,
+            name: result.data.Result[0].name,
+            email: result.data.Result[0].email,
+            address: result.data.Result[0].address,
+            registerno: result.data.Result[0].registerno,
+            category_id: result.data.Result[0].category_id,
+          })
+      }).catch((err) => console.error("Error fetching categories:", err));
+
   }, []);
 
   const handleSubmit = (e) => {
-    e.preventDefault();
+    e.preventDefault()
+    axios.put('http://localhost:3000/auth/edit_student/'+id, student)
+    .then(result => {
+      if(result.data.Status) {
+        navigate('dashboard/students')
 
-    const formData = new FormData();
-    formData.append("name", student.name);
-    formData.append("email", student.email);
-    formData.append("password", student.password);
-    formData.append("registerno", student.registerno);
-    formData.append("address", student.address);
-    formData.append("image", student.image);
-    formData.append("category_id", student.category_id);
+      } else {
+        alert(result.data.Error)
+      }
 
-    axios
-      .post("http://localhost:3000/auth/add_student", formData)
-      .then((result) => {
-        if (result.data.Status) {
-          navigate("/dashboard/students");
-        } else {
-          alert(result.data.Error);
-        }
-      })
-      .catch((err) => console.error("Error adding student:", err));
-  };
+    }).catch((err) => console.error("Error fetching categories:", err));
+  }
+
 
   return (
     <div className="d-flex justify-content-center align-items-center mt-3">
       <div className="p-3 rounded w-50 border">
-        <h3 className="text-center">Add Student</h3>
+        <h3 className="text-center">Edit Student</h3>
         <form className="row g-1" onSubmit={handleSubmit}>
           <div className="col-12">
             <label htmlFor="inputName" className="form-label">
@@ -91,22 +97,7 @@ const AddStudent = () => {
             />
           </div>
 
-          <div className="col-12">
-            <label htmlFor="inputPassword4" className="form-label">
-              Password
-            </label>
-            <input
-              type="password"
-              className="form-control rounded-0"
-              id="inputPassword4"
-              placeholder="Enter Password"
-              value={student.password}
-              onChange={(e) =>
-                setStudent({ ...student, password: e.target.value })
-              }
-              required
-            />
-          </div>
+          
 
           <div className="col-12">
             <label htmlFor="inputRegisterNo" className="form-label">
@@ -167,29 +158,14 @@ const AddStudent = () => {
             </select>
           </div>
 
-          <div className="col-12 mb-3">
-            <label htmlFor="inputGroupFile01" className="form-label">
-              Select Image
-            </label>
-            <input
-              type="file"
-              className="form-control rounded-0"
-              id="inputGroupFile01"
-              name="image"
-              accept="image/*"
-              onChange={(e) =>
-                setStudent({ ...student, image: e.target.files[0] })
-              }
-              required
-            />
-          </div>
+       
 
           <div className="col-12">
             <button
               type="submit"
               className="btn btn-success w-100 rounded-0 mb-2"
             >
-              Add Student
+             Edit Student
             </button>
           </div>
         </form>
@@ -198,4 +174,4 @@ const AddStudent = () => {
   );
 };
 
-export default AddStudent;
+export default EditStudent;

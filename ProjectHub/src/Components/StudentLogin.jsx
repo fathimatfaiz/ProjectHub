@@ -15,7 +15,7 @@ const StudentLogin = () => {
         axios.post('http://localhost:3000/student/student_login', values)
         .then(result => {
             if(result.data.loginStatus){
-                navigate('/dashboard')
+                navigate('/student_detail')
 
             } else {
                 setError(result.data.Error)

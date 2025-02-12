@@ -11,6 +11,8 @@ import AddCategory from "./Components/AddCategory";
 import AddStudent from "./Components/AddStudent";
 import Start from "./Components/Start";
 import StudentLogin from "./Components/StudentLogin";
+import EditStudent from "./Components/EditStudent";
+import StudentDetail from "./Components/StudentDetail";
 
 function App() {
   return (
@@ -20,10 +22,13 @@ function App() {
         <Route path="/start" element={<Start />}></Route>
         <Route path="/adminlogin" element={<Login />}></Route>
         <Route path="/student_login" element={<StudentLogin />}></Route>
+        <Route path="/student_detail" element={<StudentDetail />}></Route>
         <Route path="/dashboard" element={<Dashboard />}>
           <Route path="/dashboard/students" element={<Student />}></Route>
           <Route path="/dashboard/category" element={<Category />}></Route>
           <Route path="/dashboard/profile" element={<Profile />}></Route>
+          <Route path="/dashboard/edit_student/:id" element={<EditStudent />}></Route>
+          
           <Route
             path="/dashboard/add_category"
             element={<AddCategory />}
