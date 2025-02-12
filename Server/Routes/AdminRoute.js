@@ -261,4 +261,93 @@ router.post("/add_student", upload.single("image"), async (req, res) => {
   }
 });
 
+
+//student table 
+router.get("/student", async (req, res) => {
+  try {
+    const sql = "SELECT * FROM student ORDER BY name ASC";
+    con.query(sql, (err, result) => {
+      if (err) {
+        console.error("Category fetch error:", err);
+        return res.json({ Status: false, Error: "Failed to fetch categories" });
+      }
+      return res.json({ Status: true, Result: result });
+    });
+  } catch (error) {
+    console.error("Category fetch error:", error);
+    return res.json({ Status: false, Error: "Server error" });
+  }
+});
+
+//student adding in edit
+router.get('/student/:id', (req, res) => {
+  try {
+  const id = req.params.id; 
+    const sql = "SELECT * FROM student WHERE id = ?";
+    con.query(sql,[id], (err, result) => {
+      if (err) {
+        console.error("Category fetch error:", err);
+        return res.json({ Status: false, Error: "Failed to fetch categories" });
+      }
+      return res.json({ Status: true, Result: result });
+    });
+  } catch (error) {
+    console.error("Category fetch error:", error);
+    return res.json({ Status: false, Error: "Server error" });
+  }
+})
+
+
+//edit 2
+router.put('/edit_student/:id', (req, res) => {
+  try {
+  const id = req.params.id; 
+  const sql = `UPDATE student 
+        set name= ?, email= ?, registerno= ?, address= ?, category_id= ? 
+        Where id = ?`
+        const values = [
+          req.body.name,
+          req.body.email.toLowerCase(),
+          req.body.registerno.trim(),
+          req.body.address?.trim() || null,
+          req.body.category_id,
+        ];
+
+        con.query(sql,[...values, id], (err, result) => {
+          if (err) {
+            console.error("Category fetch error:", err);
+            return res.json({ Status: false, Error: "Failed to fetch categories"+err });
+          }
+          return res.json({ Status: true, Result: result });
+        
+        });
+      } catch (error) {
+        console.error("Category fetch error:", error);
+        return res.json({ Status: false, Error: "Server error" });
+      }
+      
+        
+})
+
+//delete student
+router.delete('/delete_student/:id', (req, res) => {
+  const id = req.params.id;
+  const sql = "delete from student where id = ?"
+  con.query(sql,[id], (err, result) => {
+    if (err) {
+      console.error("Category fetch error:", err);
+      return res.json({ Status: false, Error: "Failed to fetch categories"+err });
+    }
+    return res.json({ Status: true, Result: result });
+  
+  });
+})
+
+router.get('/logout', (req, res) =>{
+  res.clearCookie('token')
+  return res.json({Status: true})
+})
+
+
+
 export { router as adminRouter };

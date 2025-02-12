@@ -9,3 +9,13 @@
     background-color: rgba(1,32,93,0.6);
     color: #080505;
 }
+
+ul li :hover {
+    background-color: rgb(84, 85, 118);
+}
+
+.student_image {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
