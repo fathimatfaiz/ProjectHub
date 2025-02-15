@@ -4,6 +4,7 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import axios from 'axios';
 
 
+
 const Dashboard = () => {
   const anvigate = useNavigate()
   axios.defaults.withCredentials = true
@@ -74,7 +75,7 @@ const Dashboard = () => {
       </div>
       <div className="col p-0 m-0">
         <div className="p-2 d-flex justify-content-center shadow">
-        <h4>Project Hub Horizon Campus</h4>
+        <h4>Project Hub Horizon Campus-FOIT</h4>
         </div>
         <Outlet />
       </div>

@@ -99,4 +99,17 @@ router.post("/student_login", async (req, res) => {
   }
 });
 
+/*router.get('/detail/:id', (req, res) => {
+  const id = req.params.id;
+  const sql = "SELECT * FROM student where id = ?"
+  con.query(sql, [id], (err, result) => {
+    if(err) return res.json({Status: false});
+    return res.json(result)
+  })
+})*/
+
+
+
+
+
 export { router as StudentRouter };
