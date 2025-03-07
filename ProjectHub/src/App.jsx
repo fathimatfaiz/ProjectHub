@@ -21,6 +21,7 @@ import Supervision from "./Components/Supervision";
 import Submission from "./Components/Submission";
 import Account from "./Components/Account";
 import Task from "./Components/Task";
+import AddTitle from "./Components/AddTitle";
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
         <Route path="/student_detail/supervision" element={<Supervision />}></Route>
         <Route path="/student_detail/submission" element={<Submission />}></Route>
         <Route path="/student_detail/account" element={<Account />}></Route>
+        <Route path="/student_detail/add_title" element={<AddTitle />}></Route>
         </Route>
         
 
