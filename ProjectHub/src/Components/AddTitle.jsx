@@ -27,7 +27,7 @@ const AddTitle = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     axios
-      .post("http://localhost:3000/student/auth/add_title", {
+      .post("http://localhost:3000/student/add_title", {
         title: title.title,
         description: title.description,
         category_id: title.category_id,
@@ -40,7 +40,10 @@ const AddTitle = () => {
         }
       })
       .catch((err) => {
-        console.error("Error adding title:", err.response ? err.response.data : err.message);
+        console.error(
+          "Error adding title:",
+          err.response ? err.response.data : err.message
+        );
         alert("Failed to add title. Check the console for details.");
       });
   };
@@ -60,9 +63,7 @@ const AddTitle = () => {
               id="inputName"
               placeholder="Enter Title"
               value={title.title}
-              onChange={(e) =>
-                setTitle({ ...title, title: e.target.value })
-              }
+              onChange={(e) => setTitle({ ...title, title: e.target.value })}
               required
             />
           </div>
