@@ -74,6 +74,31 @@ const initializeDatabase = () => {
               FOREIGN KEY (category_id) REFERENCES category(id) ON DELETE SET NULL
           )`;
 
+        const createProfileTable = `
+            CREATE TABLE IF NOT EXISTS profile (
+                id INT PRIMARY KEY AUTO_INCREMENT,
+                name VARCHAR(50) NOT NULL,
+                email VARCHAR(50) UNIQUE NOT NULL,
+                password VARCHAR(255) NOT NULL,
+                address TEXT,
+                registerno VARCHAR(20) UNIQUE,
+                image VARCHAR(255),
+                category_id INT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (category_id) REFERENCES category(id) ON DELETE SET NULL
+            )`;
+
+        const createTitleTable = `
+              CREATE TABLE IF NOT EXISTS title (
+                  id INT PRIMARY KEY AUTO_INCREMENT,
+                  title VARCHAR(255) NOT NULL,
+                  description TEXT,
+                  category_id INT,
+                  status VARCHAR(50) NOT NULL,
+                  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                  FOREIGN KEY (category_id) REFERENCES category(id) ON DELETE SET NULL
+              )`;
+
         // Execute table creation queries in order
         con.query(createAdminTable, (err) => {
           if (err) {
@@ -121,6 +146,22 @@ const initializeDatabase = () => {
             return;
           }
           console.log("✅ Student table created or already exists");
+        });
+
+        con.query(createProfileTable, (err) => {
+          if (err) {
+            console.error("❌ Error creating profile table:", err);
+            return;
+          }
+          console.log("✅ Profile table created or already exists");
+        });
+
+        con.query(createTitleTable, (err) => {
+          if (err) {
+            console.error("❌ Error creating title table:", err);
+            return;
+          }
+          console.log("✅ Title table created or already exists");
         });
       });
     });
