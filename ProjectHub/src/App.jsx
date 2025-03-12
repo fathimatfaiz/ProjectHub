@@ -40,7 +40,7 @@ function App() {
         <Route path="/student_detail/title" element={<Title />}></Route>
         <Route path="/student_detail/supervision" element={<Supervision />}></Route>
         <Route path="/student_detail/submission" element={<Submission />}></Route>
-        <Route path="/student_detail/account" element={<Account />}></Route>
+        <Route path="/student_detail/account/" element={<Account />}></Route>
         <Route path="/student_detail/add_title" element={<AddTitle />}></Route>
         </Route>
         

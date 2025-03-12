@@ -15,6 +15,11 @@ app.use('/auth', adminRouter)
 app.use('/student', StudentRouter)
 app.use(express.static('Public'))
 
+// Error Handling Middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ Status: false, Error: "Internal Server Error" });
+  });
 
 app.listen(3000, () => {
     console.log("Server is running")

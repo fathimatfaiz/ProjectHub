@@ -99,37 +99,23 @@ router.post("/student_login", async (req, res) => {
   }
 });
 
-/*Add title
-router.post("/auth/add_title", (req, res) => {
-  const { title, description, category } = req.body;
-  const status = "Pending"; // Default status
 
-  const sql =
-    "INSERT INTO title (title, description, category_id, status) VALUES (?, ?, ?, ?)";
-  con.query(sql, [title, description, category_id, status], (err, result) => {
-    if (err) {
-      return res.json({ Status: false, Error: "Failed to add title" });
-    }
-    return res.json({ Status: true, Message: "Title added successfully" });
-  });
-});*/
-
-router.post("/auth/add_title", (req, res) => {
-  const { title, description, category_id, status } = req.body;
+/*router.post("/auth/add_title", (req, res) => {
+  const { title, description, category_id } = req.body;
 
   // Validation
-  if (!title || !description || !category_id || !status) {
+  if (!title || !description || !category_id) {
     return res.json({
       Status: false,
       Error: "All required fields must be filled",
     });
   }
 
-  const values = [title.trim(), description.trim(), category_id, status.trim()];
+  const values = [title.trim(), description.trim(), category_id];
 
   const sql = `
     INSERT INTO title
-    (title, description, category_id, status)
+    (title, description, category_id)
     VALUES (?, ?, ?)
   `;
 
@@ -140,8 +126,53 @@ router.post("/auth/add_title", (req, res) => {
     }
     return res.json({ Status: true, Message: "Title added successfully" });
   });
+});*/
+
+// Route to add a title
+router.post("/add_title", async (req, res) => {
+  try {
+    const { title, description, category_id } = req.body;
+
+    // Validation
+    if (!title || !description || !category_id) {
+      return res.json({
+        Status: false,
+        Error: "All fields (title, description, category_id) are required",
+      });
+    }
+
+    // Insert into the database
+    const sql = `
+      INSERT INTO title 
+      (title, description, category_id)
+      VALUES (?, ?, ?)
+    `;
+
+    const values = [title.trim(), description.trim(), category_id];
+
+    con.query(sql, values, (err, result) => {
+      if (err) {
+        console.error("Title add error:", err);
+        return res.json({ Status: false, Error: "Failed to add title" });
+      }
+      return res.json({ Status: true, Message: "Title added successfully" });
+    });
+  } catch (error) {
+    console.error("Title add error:", error);
+    return res.json({ Status: false, Error: "Server error" });
+  }
 });
 
+
+//Account
+router.get('/detail/:id', (req, res) => {
+  const id = req.params.id;
+  const sql = "SELECT * FROM student where id = ?"
+  con.query(sql, [id], (err, result) => {
+    if(err) return res.json({Status: false});
+    return res.json(result)
+  })
+})
 
 
 

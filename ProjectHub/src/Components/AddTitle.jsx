@@ -27,7 +27,7 @@ const AddTitle = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     axios
-      .post("http://localhost:3000/auth/add_title", {
+      .post("http://localhost:3000/student/auth/add_title", {
         title: title.title,
         description: title.description,
         category_id: title.category_id,
