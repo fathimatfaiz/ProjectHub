@@ -99,7 +99,6 @@ router.post("/student_login", async (req, res) => {
   }
 });
 
-
 /*router.post("/auth/add_title", (req, res) => {
   const { title, description, category_id } = req.body;
 
@@ -163,24 +162,32 @@ router.post("/add_title", async (req, res) => {
   }
 });
 
+// Route to get all titles
+router.get("/title", (req, res) => {
+  try {
+    const sql = `SELECT * FROM title`;
+
+    con.query(sql, (err, result) => {
+      if (err) {
+        console.error("Title fetch error:", err);
+        return res.json({ Status: false, Error: "Failed to fetch titles" });
+      }
+      return res.json({ Status: true, Result: result });
+    });
+  } catch (error) {
+    console.error("Title fetch error:", error);
+    return res.json({ Status: false, Error: "Server error" });
+  }
+});
 
 //Account
-router.get('/detail/:id', (req, res) => {
+router.get("/detail/:id", (req, res) => {
   const id = req.params.id;
-  const sql = "SELECT * FROM student where id = ?"
+  const sql = "SELECT * FROM student where id = ?";
   con.query(sql, [id], (err, result) => {
-    if(err) return res.json({Status: false});
-    return res.json(result)
-  })
-})
-
-
-
-
-
-
-
-
-
+    if (err) return res.json({ Status: false });
+    return res.json(result);
+  });
+});
 
 export { router as StudentRouter };
