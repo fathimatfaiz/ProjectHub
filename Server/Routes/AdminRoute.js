@@ -503,6 +503,7 @@ router.delete('/delete_profile/:id', (req, res) => {
   });
 })
 
+//logout admin
 router.get('/logout', (req, res) =>{
   res.clearCookie('token')
   return res.json({Status: true})
@@ -561,6 +562,31 @@ router.get('admin_records', (req, res) => {
 
 })
 
+// Upload a new milestone
+router.post('/upload_milestone', (req, res) => {
+  const { milestone } = req.body;
+
+  const sql = 'INSERT INTO milestones (milestone) VALUES (?)';
+  con.query(sql, [milestone], (err, result) => {
+    if (err) {
+      console.error('Error uploading milestone:', err);
+      return res.status(500).json({ Status: false, Error: 'Failed to upload milestone' });
+    }
+    return res.json({ Status: true, Message: 'Milestone uploaded successfully' });
+  });
+});
+
+// Fetch all milestones
+router.get('/milestones', (req, res) => {
+  const sql = 'SELECT * FROM milestones';
+  con.query(sql, (err, result) => {
+    if (err) {
+      console.error('Error fetching milestones:', err);
+      return res.status(500).json({ Status: false, Error: 'Failed to fetch milestones' });
+    }
+    return res.json({ Status: true, Result: result });
+  });
+});
 
 
 

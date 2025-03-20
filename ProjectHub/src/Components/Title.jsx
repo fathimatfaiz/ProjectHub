@@ -53,7 +53,19 @@ const Title = () => {
               <tr key={e.id}>
                 <td>{e.title}</td>
                 <td>{e.description}</td>
-                <td>{e.status}</td>
+                <td>
+                  <span
+                    className={`badge ${
+                      e.status === "Approved"
+                        ? "bg-success"
+                        : e.status === "Rejected"
+                        ? "bg-danger"
+                        : "bg-secondary"
+                    }`}
+                  >
+                    {e.status}
+                  </span>
+                </td>
                 <td>
                   <Link
                     to={"/student_detail/edit_title/" + e.id}
