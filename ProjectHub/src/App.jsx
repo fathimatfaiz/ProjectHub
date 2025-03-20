@@ -17,11 +17,13 @@ import AddProfile from "./Components/AddProfile";
 import EditProfile from "./Components/EditProfile";
 import Board from "./Components/Board";
 import Title from "./Components/Title";
-import Supervision from "./Components/Supervision";
 import Submission from "./Components/Submission";
 import Account from "./Components/Account";
 import Task from "./Components/Task";
 import AddTitle from "./Components/AddTitle";
+import ProjectProgress from "./Components/ProjectProgress";
+import EditTitle from "./Components/EditTitle";
+import AddMilestone from "./Components/AddMilestone";
 
 function App() {
   return (
@@ -38,10 +40,13 @@ function App() {
 
         <Route index element={<Board />}></Route>
         <Route path="/student_detail/title" element={<Title />}></Route>
-        <Route path="/student_detail/supervision" element={<Supervision />}></Route>
+        <Route path="/student_detail/project_progress" element={<ProjectProgress />}></Route>
         <Route path="/student_detail/submission" element={<Submission />}></Route>
         <Route path="/student_detail/account/" element={<Account />}></Route>
         <Route path="/student_detail/add_title" element={<AddTitle />}></Route>
+        <Route path="/student_detail/edit_title/:id" element={<EditTitle />}></Route>
+        <Route path="/student_detail/add_milestone" element={<AddMilestone />}></Route>
+
         </Route>
         
 
