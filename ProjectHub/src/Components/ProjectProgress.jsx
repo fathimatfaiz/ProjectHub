@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 
 const ProjectProgress = () => {
   const [milestones, setMilestones] = useState([]);
@@ -7,7 +7,7 @@ const ProjectProgress = () => {
   // Fetch all milestones
   useEffect(() => {
     axios
-      .get('http://localhost:3000/student/milestones')
+      .get("http://localhost:3000/student/project_progress")
       .then((result) => {
         if (result.data.Status) {
           setMilestones(result.data.Result);
@@ -15,26 +15,40 @@ const ProjectProgress = () => {
           alert(result.data.Error);
         }
       })
-      .catch((err) => console.error('Error fetching milestones:', err));
+      .catch((err) => console.error("Error fetching milestones:", err));
   }, []);
 
-   // Update student progress
-   const handleStatusChange = (milestone, newStatus) => {
+  // Update student progress
+  const handleStatusChange = (value, newStatus) => {
+    const { id, milestone } = value;
+
+    console.log(value);
+
     axios
-      .put(`http://localhost:3000/student/update_progress`,{
+      .put(`http://localhost:3000/student/project_progress/${id}`, {
         milestone,
         status: newStatus,
       })
       .then((result) => {
         if (result.data.Status) {
-          alert('Progress updated successfully');
+          setMilestones((prev) =>
+            prev.map((milestone) =>
+              milestone.id === id
+                ? { ...milestone, status: newStatus }
+                : milestone
+            )
+          );
+          alert("Progress updated successfully");
         } else {
           alert(result.data.Error);
         }
       })
       .catch((err) => {
-        console.error('Error updating progress:', err.response ? err.response.data : err.message);
-        alert('Failed to update progress. Check the console for details.');
+        console.error(
+          "Error updating progress:",
+          err.response ? err.response.data : err.message
+        );
+        alert("Failed to update progress. Check the console for details.");
       });
   };
 
@@ -55,7 +69,10 @@ const ProjectProgress = () => {
               <td>
                 <select
                   className="form-select"
-                  onChange={(e) => handleStatusChange(milestone.id, e.target.value)}
+                  value={milestone.status}
+                  onChange={(e) =>
+                    handleStatusChange(milestone, e.target.value)
+                  }
                 >
                   <option value="Not Started">Not Started</option>
                   <option value="In Progress">In Progress</option>
