@@ -99,6 +99,22 @@ const initializeDatabase = () => {
                   FOREIGN KEY (category_id) REFERENCES category(id) ON DELETE SET NULL
               )`;
 
+        const createMilestoneTable = `
+              CREATE TABLE IF NOT EXISTS milestones (
+                  id INT PRIMARY KEY AUTO_INCREMENT,
+                  milestone TEXT,
+                  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+              )`;
+
+        const createProjectProgressTable = `
+          CREATE TABLE IF NOT EXISTS project_progress (
+              id INT PRIMARY KEY AUTO_INCREMENT,
+              milestone TEXT NOT NULL,
+              status VARCHAR(50) NOT NULL DEFAULT 'Not Started',
+              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          )
+              `;
+
         // Execute table creation queries in order
         con.query(createAdminTable, (err) => {
           if (err) {
@@ -162,6 +178,22 @@ const initializeDatabase = () => {
             return;
           }
           console.log("✅ Title table created or already exists");
+        });
+
+        con.query(createMilestoneTable, (err) => {
+          if (err) {
+            console.error("❌ Error creating milestones table:", err);
+            return;
+          }
+          console.log("✅ Milestones table created or already exists");
+        });
+
+        con.query(createProjectProgressTable, (err) => {
+          if (err) {
+            console.error("❌ Error creating project progress table:", err);
+            return;
+          }
+          console.log("✅ Project Progress table created or already exists");
         });
       });
     });
