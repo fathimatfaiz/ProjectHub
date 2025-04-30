@@ -1,31 +1,35 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useState } from "react";
+import axios from "axios";
 
 const AddMilestone = () => {
-  const [milestone, setMilestone] = useState('');
+  const [milestone, setMilestone] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!milestone.trim()) {
-      alert('Milestone name cannot be empty');
+      alert("Milestone name cannot be empty");
       return;
     }
 
     axios
-      .post('http://localhost:3000/student/project_progress', {
+      .post("http://localhost:3000/student/project_progress", {
         milestone,
+        status: "Not Started", // Default status
       })
       .then((result) => {
         if (result.data.Status) {
-          alert('Milestone added successfully');
-          setMilestone(''); // Clear the input field
+          alert("Milestone added successfully");
+          setMilestone(""); // Clear the input field
         } else {
           alert(result.data.Error);
         }
       })
       .catch((err) => {
-        console.error('Error adding milestone:', err.response ? err.response.data : err.message);
-        alert('Failed to add milestone. Check the console for details.');
+        console.error(
+          "Error adding milestone:",
+          err.response ? err.response.data : err.message
+        );
+        alert("Failed to add milestone. Check the console for details.");
       });
   };
 
