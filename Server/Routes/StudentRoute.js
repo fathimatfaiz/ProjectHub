@@ -327,6 +327,26 @@ router.put('/project_progress/:id', (req, res) => {
   });
 });
 
+// Add this PUT endpoint
+router.put('/update_progress', (req, res) => {
+  const { milestone, status } = req.body;
+  const id = req.user.id; // Assuming you have authentication middleware
+
+  const query = `
+    UPDATE project_progress 
+    SET status = ?, updated_at = NOW()
+    WHERE milestone_id = ? AND id = ?
+  `;
+  
+  db.query(query, [status, milestone, id], (err, result) => {
+    if (err) {
+      console.error('Error updating progress:', err);
+      return res.status(500).json({ Status: false, Error: 'Database error' });
+    }
+    return res.json({ Status: true, Message: 'Progress updated successfully' });
+  });
+});
+
 //user logout
 router.get('/logout', (req, res) =>{
   res.clearCookie('token')

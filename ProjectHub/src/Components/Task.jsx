@@ -56,7 +56,7 @@ const Task = () => {
 
   return (
     <div className="container mt-5">
-      <h2>Admin Dashboard</h2>
+      <h2>Add Tasks</h2>
 
       {/* Upload Milestone Form */}
       <div className="mb-3">
