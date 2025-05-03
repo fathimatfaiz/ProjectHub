@@ -24,6 +24,7 @@ import AddTitle from "./Components/AddTitle";
 import ProjectProgress from "./Components/ProjectProgress";
 import EditTitle from "./Components/EditTitle";
 import AddMilestone from "./Components/AddMilestone";
+import ProgressView from "./Components/ProgressView";
 
 function App() {
   return (
@@ -61,6 +62,7 @@ function App() {
           <Route path="/dashboard/add_profile" element={<AddProfile />}></Route>
           <Route path="/dashboard/edit_profile/:id" element={<EditProfile />}></Route>
           <Route path="/dashboard/tasks" element={<Task />}></Route>
+          <Route path="/dashboard/progress" element={<ProgressView />}></Route>
           
           <Route
             path="/dashboard/add_category"

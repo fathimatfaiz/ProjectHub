@@ -63,6 +63,16 @@ const Dashboard = () => {
                  </li>
 
                  <li className="w-100">
+                    <Link to="/dashboard/progress"
+                    className="nav-link px-0 align-middle text-white"
+                    >
+                       <i className="fs-4 bi-bar-chart-steps ms-2"></i>
+                       <span className="ms-2 d-none d-sm-inline">Progress</span>
+                       </Link>
+                 </li>
+
+
+                 <li className="w-100">
                     <Link to="/dashboard/profile"
                      className="nav-link px-0 align-middle text-white"
                     >
