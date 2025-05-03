@@ -163,11 +163,11 @@ router.get("/detail/:id", (req, res) => {
 });
 
 //Title adding in edit
-router.get('/title/:id', (req, res) => {
+router.get("/title/:id", (req, res) => {
   try {
-  const id = req.params.id; 
+    const id = req.params.id;
     const sql = "SELECT * FROM title WHERE id = ?";
-    con.query(sql,[id], (err, result) => {
+    con.query(sql, [id], (err, result) => {
       if (err) {
         console.error("Category fetch error:", err);
         return res.json({ Status: false, Error: "Failed to fetch categories" });
@@ -178,103 +178,109 @@ router.get('/title/:id', (req, res) => {
     console.error("Category fetch error:", error);
     return res.json({ Status: false, Error: "Server error" });
   }
-})
+});
 
 //edit 2
-router.put('/edit_title/:id', (req, res) => {
+router.put("/edit_title/:id", (req, res) => {
   try {
-  const id = req.params.id; 
-  
+    const id = req.params.id;
 
-  const sql = `UPDATE title
+    const sql = `UPDATE title
         set title= ?, description= ?, category_id= ? 
-        Where id = ?`
-        const values = [
-          req.body.title,        // Title
-          req.body.description,  // Description
-          req.body.category_id,  // Category ID
-          req.params.id          // ID of the title to update
-        ];
+        Where id = ?`;
+    const values = [
+      req.body.title, // Title
+      req.body.description, // Description
+      req.body.category_id, // Category ID
+      req.params.id, // ID of the title to update
+    ];
 
-        con.query(sql,[...values, id], (err, result) => {
-          if (err) {
-            console.error("Category fetch error:", err);
-            return res.json({ Status: false, Error: "Failed to fetch categories"+err });
-          }
-          return res.json({ Status: true, Result: result });
-        
+    con.query(sql, [...values, id], (err, result) => {
+      if (err) {
+        console.error("Category fetch error:", err);
+        return res.json({
+          Status: false,
+          Error: "Failed to fetch categories" + err,
         });
-      } catch (error) {
-        console.error("Category fetch error:", error);
-        return res.json({ Status: false, Error: "Server error" });
       }
-      
-        
-})
+      return res.json({ Status: true, Result: result });
+    });
+  } catch (error) {
+    console.error("Category fetch error:", error);
+    return res.json({ Status: false, Error: "Server error" });
+  }
+});
 
 //delete title
-router.delete('/delete_title/:id', (req, res) => {
+router.delete("/delete_title/:id", (req, res) => {
   const id = req.params.id;
-  const sql = "delete from title where id = ?"
-  con.query(sql,[id], (err, result) => {
-    if (err) {
-      console.error("Category fetch error:", err);
-      return res.json({ Status: false, Error: "Failed to fetch categories"+err });
-    }
-    return res.json({ Status: true, Result: result });
-  
-  });
-})
-
-
-
-// Fetch project progress by id
-router.get('/project_progress/:id', (req, res) => {
-  const { id } = req.params;
-
-  const sql = 'SELECT * FROM project_progress WHERE id = ?';
+  const sql = "delete from title where id = ?";
   con.query(sql, [id], (err, result) => {
     if (err) {
-      console.error('Error fetching project progress:', err);
-      return res.status(500).json({ Status: false, Error: 'Failed to fetch project progress' });
+      console.error("Category fetch error:", err);
+      return res.json({
+        Status: false,
+        Error: "Failed to fetch categories" + err,
+      });
     }
     return res.json({ Status: true, Result: result });
   });
 });
 
+// Fetch project progress by id
+router.get("/project_progress/:id", (req, res) => {
+  const { id } = req.params;
+
+  const sql = "SELECT * FROM project_progress WHERE id = ?";
+  con.query(sql, [id], (err, result) => {
+    if (err) {
+      console.error("Error fetching project progress:", err);
+      return res
+        .status(500)
+        .json({ Status: false, Error: "Failed to fetch project progress" });
+    }
+    return res.json({ Status: true, Result: result });
+  });
+});
 
 // Update project progress for a milestone by id
-router.put('/project_progress/:id', (req, res) => {
+router.put("/project_progress/:id", (req, res) => {
   const { id } = req.params;
   const { milestone, status } = req.body;
 
   const sql = `
     UPDATE project_progress
-    SET status = ?
-    WHERE id = ? AND milestone = ?
+    SET status = ?, milestone = ?
+    WHERE id = ?
   `;
-  con.query(sql, [status, id, milestone], (err, result) => {
+  con.query(sql, [status, milestone, id], (err, result) => {
     if (err) {
-      console.error('Error updating project progress:', err);
-      return res.status(500).json({ Status: false, Error: 'Failed to update project progress' });
+      console.error("Error updating project progress:", err);
+      return res
+        .status(500)
+        .json({ Status: false, Error: "Failed to update project progress" });
     }
-    return res.json({ Status: true, Message: 'Project progress updated successfully' });
+    return res.json({
+      Status: true,
+      Message: "Project progress updated successfully",
+    });
   });
 });
 
-
-/* Fetch all milestones and their progress
-router.get('/project_progress', (req, res) => {
-  const sql = 'SELECT * FROM project_progress'; // Fetch all milestones
+// Fetch all milestones and their progress
+router.get("/project_progress", (req, res) => {
+  const sql = "SELECT * FROM project_progress"; // Fetch all milestones
 
   con.query(sql, (err, result) => {
     if (err) {
-      console.error('Error fetching milestones:', err);
-      return res.status(500).json({ Status: false, Error: 'Failed to fetch milestones' });
+      console.error("Error fetching milestones:", err);
+      return res
+        .status(500)
+        .json({ Status: false, Error: "Failed to fetch milestones" });
     }
     return res.json({ Status: true, Result: result });
   });
-});*/
+});
 
 /*Update milestone status
 router.put('/project_progress/:id', (req, res) => {
@@ -295,42 +301,42 @@ router.put('/project_progress/:id', (req, res) => {
   });
 });*/
 
-
 // Fetch all milestones for the student
-router.get('/milestones', (req, res) => {
-  const sql = 'SELECT * FROM milestones';
+router.get("/milestones", (req, res) => {
+  const sql = "SELECT * FROM milestones";
   con.query(sql, (err, result) => {
     if (err) {
-      console.error('Error fetching milestones:', err);
-      return res.status(500).json({ Status: false, Error: 'Failed to fetch milestones' });
+      console.error("Error fetching milestones:", err);
+      return res
+        .status(500)
+        .json({ Status: false, Error: "Failed to fetch milestones" });
     }
     return res.json({ Status: true, Result: result });
   });
 });
 
-// Update student progress
-router.put('/project_progress/:id', (req, res) => {
-  const { id } = req.params;
+// Add a new project progress entry or update existing one
+router.post("/project_progress", (req, res) => {
   const { milestone, status } = req.body;
 
   const sql = `
-    INSERT INTO project_progress (id, milestone, status)
-    VALUES (?, ?, ?)
-    ON DUPLICATE KEY UPDATE status = ?
+    INSERT INTO project_progress (milestone, status) VALUES (?, ?)
   `;
-  con.query(sql, [id, milestone, status], (err, result) => {
+  con.query(sql, [milestone, status], (err, result) => {
     if (err) {
-      console.error('Error updating progress:', err);
-      return res.status(500).json({ Status: false, Error: 'Failed to update progress' });
+      console.error("Error creating progress:", err);
+      return res
+        .status(500)
+        .json({ Status: false, Error: "Failed to create progress" });
     }
-    return res.json({ Status: true, Message: 'Progress updated successfully' });
+    return res.json({ Status: true, Message: "Progress created successfully" });
   });
 });
 
 //user logout
-router.get('/logout', (req, res) =>{
-  res.clearCookie('token')
-  return res.json({Status: true})
-})
+router.get("/logout", (req, res) => {
+  res.clearCookie("token");
+  return res.json({ Status: true });
+});
 
 export { router as StudentRouter };
