@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import axios from "axios";
 
 const AddMilestone = () => {
@@ -12,9 +12,8 @@ const AddMilestone = () => {
     }
 
     axios
-      .post("http://localhost:3000/student/project_progress", {
+      .post("http://localhost:3000/auth/upload_milestone", {
         milestone,
-        status: "Not Started", // Default status
       })
       .then((result) => {
         if (result.data.Status) {
