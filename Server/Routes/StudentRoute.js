@@ -2,6 +2,18 @@ import express, { response } from "express";
 import con from "../utils/db.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import { verifyToken } from "../utils/token.js";
+
+const isStudent = (req, res, next) => {
+  if (req.user.role !== "student") {
+    return res.status(403).json({
+      Status: false,
+      Error: "Access denied: Students only",
+      message: req.user,
+    });
+  }
+  next();
+};
 
 const router = express.Router();
 router.post("/student_login", async (req, res) => {
@@ -61,15 +73,14 @@ router.post("/student_login", async (req, res) => {
             id: result[0].id,
             name: result[0].name,
           },
-          process.env.STUDENT_SECRET_KEY || "student_secret_key",
+          process.env.JWT_SECRET_KEY || "jwt_secret_key",
           { expiresIn: "1d" }
         );
 
         // Set secure cookie
         res.cookie("token", token, {
-          httpOnly: true,
+          httpOnly: false,
           secure: process.env.NODE_ENV === "production",
-          sameSite: "strict",
           maxAge: 24 * 60 * 60 * 1000, // 1 day
         });
 
@@ -100,7 +111,7 @@ router.post("/student_login", async (req, res) => {
 });
 
 // Route to add a title
-router.post("/add_title", async (req, res) => {
+router.post("/add_title", verifyToken, async (req, res) => {
   try {
     const { title, description, category_id } = req.body;
 
@@ -135,7 +146,7 @@ router.post("/add_title", async (req, res) => {
 });
 
 // Route to get all titles
-router.get("/title", (req, res) => {
+router.get("/title", verifyToken, (req, res) => {
   try {
     const sql = `SELECT * FROM title`;
 
@@ -153,7 +164,7 @@ router.get("/title", (req, res) => {
 });
 
 //Account
-router.get("/detail/:id", (req, res) => {
+router.get("/detail/:id", verifyToken, (req, res) => {
   const id = req.params.id;
   const sql = "SELECT * FROM student where id = ?";
   con.query(sql, [id], (err, result) => {
@@ -163,7 +174,7 @@ router.get("/detail/:id", (req, res) => {
 });
 
 //Title adding in edit
-router.get("/title/:id", (req, res) => {
+router.get("/title/:id", verifyToken, (req, res) => {
   try {
     const id = req.params.id;
     const sql = "SELECT * FROM title WHERE id = ?";
@@ -181,7 +192,7 @@ router.get("/title/:id", (req, res) => {
 });
 
 //edit 2
-router.put("/edit_title/:id", (req, res) => {
+router.put("/edit_title/:id", verifyToken, (req, res) => {
   try {
     const id = req.params.id;
 
@@ -212,7 +223,7 @@ router.put("/edit_title/:id", (req, res) => {
 });
 
 //delete title
-router.delete("/delete_title/:id", (req, res) => {
+router.delete("/delete_title/:id", verifyToken, (req, res) => {
   const id = req.params.id;
   const sql = "delete from title where id = ?";
   con.query(sql, [id], (err, result) => {
@@ -227,10 +238,9 @@ router.delete("/delete_title/:id", (req, res) => {
   });
 });
 
-// Fetch project progress by id
-router.get("/project_progress/:id", (req, res) => {
+// Fetch project progress by ID
+router.get("/project_progress/:id", verifyToken, (req, res) => {
   const { id } = req.params;
-
   const sql = "SELECT * FROM project_progress WHERE id = ?";
   con.query(sql, [id], (err, result) => {
     if (err) {
@@ -243,17 +253,17 @@ router.get("/project_progress/:id", (req, res) => {
   });
 });
 
-// Update project progress for a milestone by id
-router.put("/project_progress/:id", (req, res) => {
+// Update project progress for a milestone by ID
+router.put("/project_progress/:id", verifyToken, (req, res) => {
   const { id } = req.params;
-  const { milestone, status } = req.body;
+  const { milestone_id, status } = req.body;
 
   const sql = `
     UPDATE project_progress
-    SET status = ?, milestone = ?
+    SET status = ?, milestone_id = ?, updated_at = NOW()
     WHERE id = ?
   `;
-  con.query(sql, [status, milestone, id], (err, result) => {
+  con.query(sql, [status, milestone_id, id], (err, result) => {
     if (err) {
       console.error("Error updating project progress:", err);
       return res
@@ -267,62 +277,16 @@ router.put("/project_progress/:id", (req, res) => {
   });
 });
 
-// Fetch all milestones and their progress
-router.get("/project_progress", (req, res) => {
-  const sql = "SELECT * FROM project_progress"; // Fetch all milestones
-
-  con.query(sql, (err, result) => {
-    if (err) {
-      console.error("Error fetching milestones:", err);
-      return res
-        .status(500)
-        .json({ Status: false, Error: "Failed to fetch milestones" });
-    }
-    return res.json({ Status: true, Result: result });
-  });
-});
-
-/*Update milestone status
-router.put('/project_progress/:id', (req, res) => {
-  const { id } = req.params;
-  const { status } = req.body;
+// Add a new project progress entry
+router.post("/project_progress", verifyToken, (req, res) => {
+  const { milestone_id, status } = req.body;
+  const student_id = req.user.id;
 
   const sql = `
-    UPDATE project_progress
-    SET status = ?
-    WHERE id = ?
+    INSERT INTO project_progress (milestone_id, status, student_id)
+    VALUES (?, ?, ?)
   `;
-  con.query(sql, [status, id], (err, result) => {
-    if (err) {
-      console.error('Error updating status:', err);
-      return res.status(500).json({ Status: false, Error: 'Failed to update status' });
-    }
-    return res.json({ Status: true, Message: 'Status updated successfully' });
-  });
-});*/
-
-// Fetch all milestones for the student
-router.get("/milestones", (req, res) => {
-  const sql = "SELECT * FROM milestones";
-  con.query(sql, (err, result) => {
-    if (err) {
-      console.error("Error fetching milestones:", err);
-      return res
-        .status(500)
-        .json({ Status: false, Error: "Failed to fetch milestones" });
-    }
-    return res.json({ Status: true, Result: result });
-  });
-});
-
-// Add a new project progress entry or update existing one
-router.post("/project_progress", (req, res) => {
-  const { milestone, status } = req.body;
-
-  const sql = `
-    INSERT INTO project_progress (milestone, status) VALUES (?, ?)
-  `;
-  con.query(sql, [milestone, status], (err, result) => {
+  con.query(sql, [milestone_id, status, student_id], (err, result) => {
     if (err) {
       console.error("Error creating progress:", err);
       return res
@@ -333,23 +297,59 @@ router.post("/project_progress", (req, res) => {
   });
 });
 
-// Add this PUT endpoint
-router.put('/update_progress', (req, res) => {
-  const { milestone, status } = req.body;
-  const id = req.user.id; // Assuming you have authentication middleware
+// Update progress by milestone for current user
+router.put("/update_progress", verifyToken, (req, res) => {
+  const { milestone_id, status } = req.body;
+  const student_id = req.user.id;
 
   const query = `
     UPDATE project_progress 
     SET status = ?, updated_at = NOW()
-    WHERE milestone_id = ? AND id = ?
+    WHERE milestone_id = ? AND student_id = ?
   `;
-  
-  db.query(query, [status, milestone, id], (err, result) => {
+  con.query(query, [status, milestone_id, student_id], (err, result) => {
     if (err) {
-      console.error('Error updating progress:', err);
-      return res.status(500).json({ Status: false, Error: 'Database error' });
+      console.error("Error updating progress:", err);
+      return res.status(500).json({ Status: false, Error: "Database error" });
     }
-    return res.json({ Status: true, Message: 'Progress updated successfully' });
+    return res.json({ Status: true, Message: "Progress updated successfully" });
+  });
+});
+
+// Fetch all project progress entries
+router.get("/project_progress", verifyToken, (req, res) => {
+  const student_id = req.user.id;
+
+  const query = `
+    SELECT pp.*, m.milestone, s.name AS student_name
+    FROM project_progress pp
+    LEFT JOIN milestones m ON pp.milestone_id = m.id
+    LEFT JOIN student s ON pp.student_id = s.id
+    WHERE pp.student_id = ?
+  `;
+
+  con.query(query, [student_id], (err, result) => {
+    if (err) {
+      console.error("Error fetching milestones:", err);
+      return res
+        .status(500)
+        .json({ Status: false, Error: "Failed to fetch milestones" });
+    }
+    return res.json({ Status: true, Result: result });
+  });
+});
+
+// Fetch all milestones for the student
+router.get("/milestones", verifyToken, (req, res) => {
+  const sql = "SELECT * FROM milestones";
+  con.query(sql, (err, result) => {
+    if (err) {
+      console.error("Error fetching milestones:", err);
+      return res
+        .status(500)
+        .json({ Status: false, Error: "Failed to fetch milestones" });
+    }
+    return res.json({ Status: true, Result: result });
   });
 });
 
