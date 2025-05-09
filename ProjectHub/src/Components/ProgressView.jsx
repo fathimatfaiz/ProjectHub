@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 const ProgressView = () => {
   const [projectProgress, setProjectProgress] = useState([]);
@@ -7,7 +7,7 @@ const ProgressView = () => {
   // Fetch all student progress
   useEffect(() => {
     axios
-      .get('http://localhost:3000/auth/project_progress')
+      .get("http://localhost:3000/auth/project_progress")
       .then((result) => {
         if (result.data.Status) {
           setProjectProgress(result.data.Result);
@@ -15,7 +15,7 @@ const ProgressView = () => {
           alert(result.data.Error);
         }
       })
-      .catch((err) => console.error('Error fetching progress:', err));
+      .catch((err) => console.error("Error fetching progress:", err));
   }, []);
 
   return (
@@ -32,8 +32,8 @@ const ProgressView = () => {
         <tbody>
           {projectProgress.map((progress) => (
             <tr key={progress.id}>
-              <td>{progress.id}</td>
-              <td>{progress.milestone}</td>
+              <td>{progress.student_id}</td>
+              <td>{progress.milestone_name}</td>
               <td>{progress.status}</td>
             </tr>
           ))}
