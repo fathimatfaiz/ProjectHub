@@ -1,10 +1,11 @@
 import express from "express";
-import con from "../utils/db.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import con from "../utils/db.js";
+import { verifyToken } from "../utils/token.js";
 
 const router = express.Router();
 
@@ -47,8 +48,17 @@ const upload = multer({
   },
 });
 
+const isAdmin = (req, res, next) => {
+  if (req.user.role !== "admin") {
+    return res
+      .status(403)
+      .json({ Status: false, Error: "Access denied: Admins only" });
+  }
+  next();
+};
+
 // Add new admin
-router.post("/add_admin", async (req, res) => {
+router.post("/add_admin", verifyToken, async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
@@ -140,7 +150,7 @@ router.post("/adminlogin", async (req, res) => {
       );
 
       res.cookie("token", token, {
-        httpOnly: true,
+        httpOnly: false,
         secure: process.env.NODE_ENV === "production",
         maxAge: 24 * 60 * 60 * 1000, // 1 day
       });
@@ -154,7 +164,7 @@ router.post("/adminlogin", async (req, res) => {
 });
 
 // Get all categories
-router.get("/category", async (req, res) => {
+router.get("/category", verifyToken, async (req, res) => {
   try {
     const sql = "SELECT * FROM category ORDER BY name ASC";
     con.query(sql, (err, result) => {
@@ -171,7 +181,7 @@ router.get("/category", async (req, res) => {
 });
 
 // Add new category
-router.post("/add_category", async (req, res) => {
+router.post("/add_category", verifyToken, async (req, res) => {
   try {
     const { category } = req.body;
 
@@ -197,73 +207,80 @@ router.post("/add_category", async (req, res) => {
 });
 
 // Add new student
-router.post("/add_student", upload.single("image"), async (req, res) => {
-  try {
-    const { name, email, password, address, registerno, category_id } =
-      req.body;
+router.post(
+  "/add_student",
+  verifyToken,
+  upload.single("image"),
+  async (req, res) => {
+    try {
+      const { name, email, password, address, registerno, category_id } =
+        req.body;
 
-    // Validation
-    if (!name || !email || !password || !registerno || !category_id) {
-      return res.json({
-        Status: false,
-        Error: "All required fields must be filled",
-      });
-    }
+      // Validation
+      if (!name || !email || !password || !registerno || !category_id) {
+        return res.json({
+          Status: false,
+          Error: "All required fields must be filled",
+        });
+      }
 
-    if (!req.file) {
-      return res.json({ Status: false, Error: "Image is required" });
-    }
+      if (!req.file) {
+        return res.json({ Status: false, Error: "Image is required" });
+      }
 
-    // Email format validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.json({ Status: false, Error: "Invalid email format" });
-    }
+      // Email format validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.json({ Status: false, Error: "Invalid email format" });
+      }
 
-    const hash = await bcrypt.hash(password, 10);
-    const values = [
-      name.trim(),
-      email.toLowerCase(),
-      hash,
-      address?.trim() || null,
-      registerno.trim(),
-      req.file.filename,
-      category_id,
-    ];
+      const hash = await bcrypt.hash(password, 10);
+      const values = [
+        name.trim(),
+        email.toLowerCase(),
+        hash,
+        address?.trim() || null,
+        registerno.trim(),
+        req.file.filename,
+        category_id,
+      ];
 
-    const sql = `
+      const sql = `
           INSERT INTO student 
           (name, email, password, address, registerno, image, category_id)
           VALUES (?)
       `;
 
-    con.query(sql, [values], (err, result) => {
-      if (err) {
-        if (err.code === "ER_DUP_ENTRY") {
-          if (err.message.includes("email")) {
-            return res.json({ Status: false, Error: "Email already exists" });
+      con.query(sql, [values], (err, result) => {
+        if (err) {
+          if (err.code === "ER_DUP_ENTRY") {
+            if (err.message.includes("email")) {
+              return res.json({ Status: false, Error: "Email already exists" });
+            }
+            if (err.message.includes("registerno")) {
+              return res.json({
+                Status: false,
+                Error: "Registration number already exists",
+              });
+            }
           }
-          if (err.message.includes("registerno")) {
-            return res.json({
-              Status: false,
-              Error: "Registration number already exists",
-            });
-          }
+          console.error("Student add error:", err);
+          return res.json({ Status: false, Error: "Failed to add student" });
         }
-        console.error("Student add error:", err);
-        return res.json({ Status: false, Error: "Failed to add student" });
-      }
-      return res.json({ Status: true, Message: "Student added successfully" });
-    });
-  } catch (error) {
-    console.error("Student add error:", error);
-    return res.json({ Status: false, Error: "Server error" });
+        return res.json({
+          Status: true,
+          Message: "Student added successfully",
+        });
+      });
+    } catch (error) {
+      console.error("Student add error:", error);
+      return res.json({ Status: false, Error: "Server error" });
+    }
   }
-});
+);
 
-
-//student table 
-router.get("/student", async (req, res) => {
+//student table
+router.get("/student", verifyToken, async (req, res) => {
   try {
     const sql = "SELECT * FROM student ORDER BY name ASC";
     con.query(sql, (err, result) => {
@@ -280,11 +297,11 @@ router.get("/student", async (req, res) => {
 });
 
 //student adding in edit
-router.get('/student/:id', (req, res) => {
+router.get("/student/:id", verifyToken, (req, res) => {
   try {
-  const id = req.params.id; 
+    const id = req.params.id;
     const sql = "SELECT * FROM student WHERE id = ?";
-    con.query(sql,[id], (err, result) => {
+    con.query(sql, [id], (err, result) => {
       if (err) {
         console.error("Category fetch error:", err);
         return res.json({ Status: false, Error: "Failed to fetch categories" });
@@ -295,126 +312,135 @@ router.get('/student/:id', (req, res) => {
     console.error("Category fetch error:", error);
     return res.json({ Status: false, Error: "Server error" });
   }
-})
-
+});
 
 //edit 2
-router.put('/edit_student/:id', (req, res) => {
+router.put("/edit_student/:id", verifyToken, (req, res) => {
   try {
-  const id = req.params.id; 
-  const sql = `UPDATE student 
+    const id = req.params.id;
+    const sql = `UPDATE student 
         set name= ?, email= ?, registerno= ?, address= ?, category_id= ? 
-        Where id = ?`
-        const values = [
-          req.body.name,
-          req.body.email.toLowerCase(),
-          req.body.registerno.trim(),
-          req.body.address?.trim() || null,
-          req.body.category_id,
-        ];
-
-        con.query(sql,[...values, id], (err, result) => {
-          if (err) {
-            console.error("Category fetch error:", err);
-            return res.json({ Status: false, Error: "Failed to fetch categories"+err });
-          }
-          return res.json({ Status: true, Result: result });
-        
-        });
-      } catch (error) {
-        console.error("Category fetch error:", error);
-        return res.json({ Status: false, Error: "Server error" });
-      }
-      
-        
-})
-
-//delete student
-router.delete('/delete_student/:id', (req, res) => {
-  const id = req.params.id;
-  const sql = "delete from student where id = ?"
-  con.query(sql,[id], (err, result) => {
-    if (err) {
-      console.error("Category fetch error:", err);
-      return res.json({ Status: false, Error: "Failed to fetch categories"+err });
-    }
-    return res.json({ Status: true, Result: result });
-  
-  });
-})
-
-router.get('/logout', (req, res) =>{
-  res.clearCookie('token')
-  return res.json({Status: true})
-})
-
-// Add new admin/profile
-router.post("/add_profile", upload.single("image"), async (req, res) => {
-  try {
-    const { name, email, password, address, registerno, category_id } =
-      req.body;
-
-    // Validation
-    if (!name || !email || !password || !registerno || !category_id) {
-      return res.json({
-        Status: false,
-        Error: "All required fields must be filled",
-      });
-    }
-
-    if (!req.file) {
-      return res.json({ Status: false, Error: "Image is required" });
-    }
-
-    // Email format validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.json({ Status: false, Error: "Invalid email format" });
-    }
-
-    const hash = await bcrypt.hash(password, 10);
+        Where id = ?`;
     const values = [
-      name.trim(),
-      email.toLowerCase(),
-      hash,
-      address?.trim() || null,
-      registerno.trim(),
-      req.file.filename,
-      category_id,
+      req.body.name,
+      req.body.email.toLowerCase(),
+      req.body.registerno.trim(),
+      req.body.address?.trim() || null,
+      req.body.category_id,
     ];
 
-    const sql = `
+    con.query(sql, [...values, id], (err, result) => {
+      if (err) {
+        console.error("Category fetch error:", err);
+        return res.json({
+          Status: false,
+          Error: "Failed to fetch categories" + err,
+        });
+      }
+      return res.json({ Status: true, Result: result });
+    });
+  } catch (error) {
+    console.error("Category fetch error:", error);
+    return res.json({ Status: false, Error: "Server error" });
+  }
+});
+
+//delete student
+router.delete("/delete_student/:id", verifyToken, (req, res) => {
+  const id = req.params.id;
+  const sql = "delete from student where id = ?";
+  con.query(sql, [id], (err, result) => {
+    if (err) {
+      console.error("Category fetch error:", err);
+      return res.json({
+        Status: false,
+        Error: "Failed to fetch categories" + err,
+      });
+    }
+    return res.json({ Status: true, Result: result });
+  });
+});
+
+router.get("/logout", (req, res) => {
+  res.clearCookie("token");
+  return res.json({ Status: true });
+});
+
+// Add new admin/profile
+router.post(
+  "/add_profile",
+  verifyToken,
+  upload.single("image"),
+  async (req, res) => {
+    try {
+      const { name, email, password, address, registerno, category_id } =
+        req.body;
+
+      // Validation
+      if (!name || !email || !password || !registerno || !category_id) {
+        return res.json({
+          Status: false,
+          Error: "All required fields must be filled",
+        });
+      }
+
+      if (!req.file) {
+        return res.json({ Status: false, Error: "Image is required" });
+      }
+
+      // Email format validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.json({ Status: false, Error: "Invalid email format" });
+      }
+
+      const hash = await bcrypt.hash(password, 10);
+      const values = [
+        name.trim(),
+        email.toLowerCase(),
+        hash,
+        address?.trim() || null,
+        registerno.trim(),
+        req.file.filename,
+        category_id,
+      ];
+
+      const sql = `
           INSERT INTO profile 
           (name, email, password, address, registerno, image, category_id)
           VALUES (?)
       `;
 
-    con.query(sql, [values], (err, result) => {
-      if (err) {
-        if (err.code === "ER_DUP_ENTRY") {
-          if (err.message.includes("email")) {
-            return res.json({ Status: false, Error: "Email already exists" });
+      con.query(sql, [values], (err, result) => {
+        if (err) {
+          if (err.code === "ER_DUP_ENTRY") {
+            if (err.message.includes("email")) {
+              return res.json({ Status: false, Error: "Email already exists" });
+            }
+            if (err.message.includes("registerno")) {
+              return res.json({
+                Status: false,
+                Error: "Registration number already exists",
+              });
+            }
           }
-          if (err.message.includes("registerno")) {
-            return res.json({
-              Status: false,
-              Error: "Registration number already exists",
-            });
-          }
+          console.error("Profile add error:", err);
+          return res.json({ Status: false, Error: "Failed to add profile" });
         }
-        console.error("Profile add error:", err);
-        return res.json({ Status: false, Error: "Failed to add profile" });
-      }
-      return res.json({ Status: true, Message: "Profile added successfully" });
-    });
-  } catch (error) {
-    console.error("Profile add error:", error);
-    return res.json({ Status: false, Error: "Server error" });
+        return res.json({
+          Status: true,
+          Message: "Profile added successfully",
+        });
+      });
+    } catch (error) {
+      console.error("Profile add error:", error);
+      return res.json({ Status: false, Error: "Server error" });
+    }
   }
-});
+);
 
-//admin/profile table 
-router.get("/profile", async (req, res) => {
+//admin/profile table
+router.get("/profile", verifyToken, async (req, res) => {
   try {
     const sql = "SELECT * FROM profile ORDER BY name ASC";
     con.query(sql, (err, result) => {
@@ -430,13 +456,12 @@ router.get("/profile", async (req, res) => {
   }
 });
 
-
 //profile adding in edit
-router.get('/profile/:id', (req, res) => {
+router.get("/profile/:id", verifyToken, (req, res) => {
   try {
-  const id = req.params.id; 
+    const id = req.params.id;
     const sql = "SELECT * FROM profile WHERE id = ?";
-    con.query(sql,[id], (err, result) => {
+    con.query(sql, [id], (err, result) => {
       if (err) {
         console.error("Category fetch error:", err);
         return res.json({ Status: false, Error: "Failed to fetch categories" });
@@ -447,148 +472,197 @@ router.get('/profile/:id', (req, res) => {
     console.error("Category fetch error:", error);
     return res.json({ Status: false, Error: "Server error" });
   }
-})
+});
 
 //profile edit 2
-router.put('/edit_profile/:id', (req, res) => {
+router.put("/edit_profile/:id", verifyToken, (req, res) => {
   try {
-  const id = req.params.id; 
+    const id = req.params.id;
 
-// Validate required fields
-if (!req.body.name || !req.body.email || !req.body.registerno) {
-  return res.status(400).json({ Status: false, Error: "Missing required fields (name, email, registerno)" });
-}
+    // Validate required fields
+    if (!req.body.name || !req.body.email || !req.body.registerno) {
+      return res.status(400).json({
+        Status: false,
+        Error: "Missing required fields (name, email, registerno)",
+      });
+    }
 
-// Ensure registerno is a string and trim it
-const registerno = String(req.body.registerno || '').trim();
+    // Ensure registerno is a string and trim it
+    const registerno = String(req.body.registerno || "").trim();
 
-  const sql = `UPDATE profile
+    const sql = `UPDATE profile
         set name= ?, email= ?, registerno= ?, address= ?, category_id= ? 
-        Where id = ?`
-        const values = [
-          req.body.name,
-          req.body.email.toLowerCase(),
-          registerno,
-          req.body.address?.trim() || null,
-          req.body.category_id,
-        ];
+        Where id = ?`;
+    const values = [
+      req.body.name,
+      req.body.email.toLowerCase(),
+      registerno,
+      req.body.address?.trim() || null,
+      req.body.category_id,
+    ];
 
-        con.query(sql,[...values, id], (err, result) => {
-          if (err) {
-            console.error("Category fetch error:", err);
-            return res.json({ Status: false, Error: "Failed to fetch categories"+err });
-          }
-          return res.json({ Status: true, Result: result });
-        
+    con.query(sql, [...values, id], (err, result) => {
+      if (err) {
+        console.error("Category fetch error:", err);
+        return res.json({
+          Status: false,
+          Error: "Failed to fetch categories" + err,
         });
-      } catch (error) {
-        console.error("Category fetch error:", error);
-        return res.json({ Status: false, Error: "Server error" });
       }
-      
-        
-})
+      return res.json({ Status: true, Result: result });
+    });
+  } catch (error) {
+    console.error("Category fetch error:", error);
+    return res.json({ Status: false, Error: "Server error" });
+  }
+});
 
 //delete profile
-router.delete('/delete_profile/:id', (req, res) => {
+router.delete("/delete_profile/:id", verifyToken, (req, res) => {
   const id = req.params.id;
-  const sql = "delete from profile where id = ?"
-  con.query(sql,[id], (err, result) => {
+  const sql = "delete from profile where id = ?";
+  con.query(sql, [id], (err, result) => {
     if (err) {
       console.error("Category fetch error:", err);
-      return res.json({ Status: false, Error: "Failed to fetch categories"+err });
+      return res.json({
+        Status: false,
+        Error: "Failed to fetch categories" + err,
+      });
     }
     return res.json({ Status: true, Result: result });
-  
   });
-})
+});
 
 //logout admin
-router.get('/logout', (req, res) =>{
-  res.clearCookie('token')
-  return res.json({Status: true})
-})
+router.get("/logout", (req, res) => {
+  res.clearCookie("token");
+  return res.json({ Status: true });
+});
 
 //dashboard home -admin
-router.get('/admin_count', (req, res) => {
+router.get("/admin_count", (req, res) => {
   const sql = "select count(id) as admin from admin";
   con.query(sql, (err, result) => {
     if (err) {
       console.error("Category fetch error:", err);
-      return res.json({ Status: false, Error: "Failed to fetch categories"+err });
+      return res.json({
+        Status: false,
+        Error: "Failed to fetch categories" + err,
+      });
     }
     return res.json({ Status: true, Result: result });
-  
   });
-})
+});
 
 //student count total
-router.get('/student_count', (req, res) => {
+router.get("/student_count", (req, res) => {
   const sql = "select count(id) as student from student";
   con.query(sql, (err, result) => {
     if (err) {
       console.error("Category fetch error:", err);
-      return res.json({ Status: false, Error: "Failed to fetch categories"+err });
+      return res.json({
+        Status: false,
+        Error: "Failed to fetch categories" + err,
+      });
     }
     return res.json({ Status: true, Result: result });
-  
   });
-})
+});
 
 //category count
-router.get('/category_count', (req, res) => {
+router.get("/category_count", (req, res) => {
   const sql = "select count(id) as category from category";
   con.query(sql, (err, result) => {
     if (err) {
       console.error("Category fetch error:", err);
-      return res.json({ Status: false, Error: "Failed to fetch categories"+err });
+      return res.json({
+        Status: false,
+        Error: "Failed to fetch categories" + err,
+      });
     }
     return res.json({ Status: true, Result: result });
-  
   });
-})
+});
 
 //admin records
-router.get('admin_records', (req, res) => {
+router.get("admin_records", verifyToken, (req, res) => {
   const sql = "SELECT * from admin";
   con.query(sql, (err, result) => {
     if (err) {
       console.error("Category fetch error:", err);
-      return res.json({ Status: false, Error: "Failed to fetch categories"+err });
+      return res.json({
+        Status: false,
+        Error: "Failed to fetch categories" + err,
+      });
     }
     return res.json({ Status: true, Result: result });
-  
   });
-
-})
+});
 
 // Upload a new milestone
-router.post('/upload_milestone', (req, res) => {
+router.post("/upload_milestone", verifyToken, (req, res) => {
   const { milestone } = req.body;
 
-  const sql = 'INSERT INTO milestones (milestone) VALUES (?)';
+  if (!milestone) {
+    return res
+      .status(400)
+      .json({ Status: false, Error: "Milestone is required" });
+  }
+
+  const sql = "INSERT INTO milestones (milestone) VALUES (?)";
   con.query(sql, [milestone], (err, result) => {
     if (err) {
-      console.error('Error uploading milestone:', err);
-      return res.status(500).json({ Status: false, Error: 'Failed to upload milestone' });
+      console.error("Error uploading milestone:", err);
+      return res
+        .status(500)
+        .json({ Status: false, Error: "Failed to upload milestone" });
     }
-    return res.json({ Status: true, Message: 'Milestone uploaded successfully' });
+    return res.json({
+      Status: true,
+      Message: "Milestone uploaded successfully",
+      Result: result,
+    });
   });
 });
 
 // Fetch all milestones
-router.get('/milestones', (req, res) => {
-  const sql = 'SELECT * FROM milestones';
+router.get("/milestones", verifyToken, (req, res) => {
+  const sql = "SELECT * FROM milestones ORDER BY created_at DESC";
   con.query(sql, (err, result) => {
     if (err) {
-      console.error('Error fetching milestones:', err);
-      return res.status(500).json({ Status: false, Error: 'Failed to fetch milestones' });
+      console.error("Error fetching milestones:", err);
+      return res
+        .status(500)
+        .json({ Status: false, Error: "Failed to fetch milestones" });
     }
     return res.json({ Status: true, Result: result });
   });
 });
 
-
-
+// Fetch all project progress (joined with milestone & student)
+router.get("/project_progress", verifyToken, (req, res) => {
+  const sql = `
+    SELECT 
+      pp.id,
+      pp.status,
+      pp.created_at,
+      m.milestone AS milestone_name,
+      s.name AS student_name,
+      s.id AS student_id
+    FROM project_progress pp
+    LEFT JOIN milestones m ON pp.milestone_id = m.id
+    LEFT JOIN student s ON pp.student_id = s.id
+    ORDER BY pp.created_at DESC
+  `;
+  con.query(sql, (err, result) => {
+    if (err) {
+      console.error("Error fetching project progress:", err);
+      return res
+        .status(500)
+        .json({ Status: false, Error: "Failed to fetch project progress" });
+    }
+    return res.json({ Status: true, Result: result });
+  });
+});
 
 export { router as adminRouter };
