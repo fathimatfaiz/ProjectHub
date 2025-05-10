@@ -25,50 +25,57 @@ import ProjectProgress from "./Components/ProjectProgress";
 import EditTitle from "./Components/EditTitle";
 import AddMilestone from "./Components/AddMilestone";
 import ProgressView from "./Components/ProgressView";
+import ProtectedRoute from "./Components/ProtectedRoute";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-      <Route path="/" element={<Home />}></Route>
-      <Route path="/" element={<Board />}></Route>
-       <Route path="/start" element={<Start />}></Route>
+        <Route path="/" element={<Home />}></Route>
+        <Route path="/" element={<Board />}></Route>
+        <Route path="/start" element={<Start />}></Route>
         <Route path="/adminlogin" element={<Login />}></Route>
         <Route path="/student_login" element={<StudentLogin />}></Route>
 
-
-        <Route path="/student_detail" element={<StudentDetail />}> 
-
-        <Route index element={<Board />}></Route>
-        <Route path="/student_detail/title" element={<Title />}></Route>
-        <Route path="/student_detail/project_progress" element={<ProjectProgress />}></Route>
-        <Route path="/student_detail/submission" element={<Submission />}></Route>
-        <Route path="/student_detail/account/" element={<Account />}></Route>
-        <Route path="/student_detail/add_title" element={<AddTitle />}></Route>
-        <Route path="/student_detail/edit_title/:id" element={<EditTitle />}></Route>
-        <Route path="/student_detail/add_milestone" element={<AddMilestone />}></Route>
-
+        {/* Student Routes - Protected */}
+        <Route
+          path="/student_detail"
+          element={
+            <ProtectedRoute requiredRole="student">
+              <StudentDetail />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<Board />} />
+          <Route path="title" element={<Title />} />
+          <Route path="project_progress" element={<ProjectProgress />} />
+          <Route path="submission" element={<Submission />} />
+          <Route path="account" element={<Account />} />
+          <Route path="add_title" element={<AddTitle />} />
+          <Route path="edit_title/:id" element={<EditTitle />} />
+          <Route path="add_milestone" element={<AddMilestone />} />
         </Route>
-        
 
-
-        <Route path="/dashboard" element={<Dashboard />}>
-        
-          <Route index element={<Home />}></Route>
-          <Route path="/dashboard/students" element={<Student />}></Route>
-          <Route path="/dashboard/category" element={<Category />}></Route>
-          <Route path="/dashboard/profile" element={<Profile />}></Route>
-          <Route path="/dashboard/edit_student/:id" element={<EditStudent />}></Route>
-          <Route path="/dashboard/add_profile" element={<AddProfile />}></Route>
-          <Route path="/dashboard/edit_profile/:id" element={<EditProfile />}></Route>
-          <Route path="/dashboard/tasks" element={<Task />}></Route>
-          <Route path="/dashboard/progress" element={<ProgressView />}></Route>
-          
-          <Route
-            path="/dashboard/add_category"
-            element={<AddCategory />}
-          ></Route>
-          <Route path="/dashboard/add_student" element={<AddStudent />}></Route>
+        {/* Admin Routes - Protected */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<Home />} />
+          <Route path="students" element={<Student />} />
+          <Route path="category" element={<Category />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="edit_student/:id" element={<EditStudent />} />
+          <Route path="add_profile" element={<AddProfile />} />
+          <Route path="edit_profile/:id" element={<EditProfile />} />
+          <Route path="tasks" element={<Task />} />
+          <Route path="progress" element={<ProgressView />} />
+          <Route path="add_category" element={<AddCategory />} />
+          <Route path="add_student" element={<AddStudent />} />
         </Route>
       </Routes>
     </BrowserRouter>

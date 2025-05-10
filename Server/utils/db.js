@@ -109,11 +109,13 @@ const initializeDatabase = () => {
         const createProjectProgressTable = `
           CREATE TABLE IF NOT EXISTS project_progress (
               id INT PRIMARY KEY AUTO_INCREMENT,
-              milestone TEXT NOT NULL,
+              student_id INT,
+              milestone_id INT,
               status VARCHAR(50) NOT NULL DEFAULT 'Not Started',
-              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-          )
-              `;
+              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+              FOREIGN KEY (student_id) REFERENCES student(id) ON DELETE SET NULL,
+              FOREIGN KEY (milestone_id) REFERENCES milestones(id) ON DELETE SET NULL
+          )`;
 
         // Execute table creation queries in order
         con.query(createAdminTable, (err) => {
@@ -162,6 +164,30 @@ const initializeDatabase = () => {
             return;
           }
           console.log("✅ Student table created or already exists");
+
+          // Hash default admin password
+          const defaultPassword = "student123"; // Change this to a secure default
+          bcrypt.hash(defaultPassword, 10, (err, hashedPassword) => {
+            if (err) {
+              console.error("❌ Error hashing password:", err);
+              return;
+            }
+
+            // Insert default admin if not exists
+            const insertDefaultStudent = `
+              INSERT INTO student (name, email, password, registerno)
+              SELECT 'Default Student', 'student@gmail.com', ?, 'REG12345'
+              WHERE NOT EXISTS (SELECT 1 FROM student WHERE email = 'student@gmail.com')
+            `;
+
+            con.query(insertDefaultStudent, [hashedPassword], (err) => {
+              if (err) {
+                console.error("❌ Error inserting default student:", err);
+              } else {
+                console.log("✅ Default student created or already exists");
+              }
+            });
+          });
         });
 
         con.query(createProfileTable, (err) => {
