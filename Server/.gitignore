@@ -26,8 +26,6 @@ coverage/
 # Bower dependency directory (https://bower.io/)
 bower_components/
 
-# Environment variables
-.env
 
 # IDEs and editors
 .idea/

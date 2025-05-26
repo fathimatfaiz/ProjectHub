@@ -1,12 +1,18 @@
-import mysql from "mysql";
+import mysql from "mysql2";
 import bcrypt from "bcrypt"; // Used for hashing passwords
+
+const DB_HOST = "localhost";
+const DB_USERNAME = "root";
+const DB_PASSWORD = "123456";
+const DB_DATABASE = "projectms";
+const PORT = 3306;
 
 // First connect without database to create it if needed
 const initialCon = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "",
-  port: 3306,
+  host: DB_HOST,
+  user: DB_USERNAME,
+  password: DB_PASSWORD,
+  port: PORT,
 });
 
 const initializeDatabase = () => {
@@ -29,11 +35,11 @@ const initializeDatabase = () => {
 
       // Connect to the database
       const con = mysql.createConnection({
-        host: "localhost",
-        user: "root",
-        password: "",
-        database: "projectms",
-        port: 3306,
+        host: DB_HOST,
+        user: DB_USERNAME,
+        password: DB_PASSWORD,
+        database: DB_DATABASE,
+        port: PORT,
       });
 
       con.connect(async (err) => {
@@ -231,11 +237,11 @@ initializeDatabase();
 
 // Export the connection for use in other parts of the application
 const con = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "",
-  database: "projectms",
-  port: 3306,
+  host: DB_HOST,
+  user: DB_USERNAME,
+  password: DB_PASSWORD,
+  database: DB_DATABASE,
+  port: PORT,
 });
 
 export default con;

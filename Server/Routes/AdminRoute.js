@@ -6,6 +6,7 @@ import path from "path";
 import fs from "fs";
 import con from "../utils/db.js";
 import { verifyToken } from "../utils/token.js";
+import {sendMail} from "../utils/mailer.js";
 
 const router = express.Router();
 
@@ -251,11 +252,11 @@ router.post(
           VALUES (?)
       `;
 
-      con.query(sql, [values], (err, result) => {
+      con.query(sql, [values], async (err, result) => {
         if (err) {
           if (err.code === "ER_DUP_ENTRY") {
             if (err.message.includes("email")) {
-              return res.json({ Status: false, Error: "Email already exists" });
+              return res.json({Status: false, Error: "Email already exists"});
             }
             if (err.message.includes("registerno")) {
               return res.json({
@@ -265,8 +266,15 @@ router.post(
             }
           }
           console.error("Student add error:", err);
-          return res.json({ Status: false, Error: "Failed to add student" });
+          return res.json({Status: false, Error: "Failed to add student"});
         }
+
+        await sendMail(
+            email,
+            "Welcome to TechZap!",
+            `<p>Hello ${name},</p><p>Welcome to our system. Your registration number is <strong>${registerno}</strong>.</p>`
+        );
+
         return res.json({
           Status: true,
           Message: "Student added successfully",
@@ -329,7 +337,7 @@ router.put("/edit_student/:id", verifyToken, (req, res) => {
       req.body.category_id,
     ];
 
-    con.query(sql, [...values, id], (err, result) => {
+    con.query(sql, [...values, id], async (err, result) => {
       if (err) {
         console.error("Category fetch error:", err);
         return res.json({
@@ -337,7 +345,14 @@ router.put("/edit_student/:id", verifyToken, (req, res) => {
           Error: "Failed to fetch categories" + err,
         });
       }
-      return res.json({ Status: true, Result: result });
+      await sendMail(
+          req.body.email.toLowerCase(),
+          "Update Notification on ProjectHub",
+          `<p>Hello ${name},</p><p>Update Notification. Your student information has been modified</p>`
+      );
+
+      return res.json({Status: true, Result: result});
+
     });
   } catch (error) {
     console.error("Category fetch error:", error);

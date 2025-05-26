@@ -3,6 +3,7 @@ import con from "../utils/db.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { verifyToken } from "../utils/token.js";
+import {sendMail} from "../utils/mailer.js";
 
 const isStudent = (req, res, next) => {
   if (req.user.role !== "student") {
@@ -14,6 +15,10 @@ const isStudent = (req, res, next) => {
   }
   next();
 };
+
+const now = new Date();
+const Time = now.toLocaleString("en-US", { timeZone: "Asia/Colombo" }); // Adjust as needed
+
 
 const router = express.Router();
 router.post("/student_login", async (req, res) => {
@@ -83,6 +88,12 @@ router.post("/student_login", async (req, res) => {
           secure: process.env.NODE_ENV === "production",
           maxAge: 24 * 60 * 60 * 1000, // 1 day
         });
+
+        await sendMail(
+            email,
+            "Login Notification to ProjectHub",
+            `<p>Hello ${name},</p><p>This is to inform you that you have successfully logged into ProjectHub at ${Time}.</p>`
+        );
 
         return res.json({
           loginStatus: true,
