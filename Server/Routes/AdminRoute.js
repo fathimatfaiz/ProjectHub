@@ -271,7 +271,7 @@ router.post(
 
         await sendMail(
             email,
-            "Welcome to TechZap!",
+            "Welcome to ProjectHub!",
             `<p>Hello ${name},</p><p>Welcome to our system. Your registration number is <strong>${registerno}</strong>.</p>`
         );
 
