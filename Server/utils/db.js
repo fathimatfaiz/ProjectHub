@@ -1,9 +1,9 @@
 import mysql from "mysql2";
 import bcrypt from "bcrypt"; // Used for hashing passwords
 
-const DB_HOST = "localhost";
+const DB_HOST = "127.0.0.1";
 const DB_USERNAME = "root";
-const DB_PASSWORD = "123456";
+const DB_PASSWORD = "";
 const DB_DATABASE = "projectms";
 const PORT = 3306;
 
