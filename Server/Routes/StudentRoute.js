@@ -25,8 +25,6 @@ router.post("/student_login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    console.log(email, password)
-
     // Input validation
     if (!email || !password) {
       return res.json({
@@ -47,7 +45,6 @@ router.post("/student_login", async (req, res) => {
     const sql = "SELECT id, email, password, name FROM student WHERE email = ?";
 
     con.query(sql, [email.toLowerCase()], async (err, result) => {
-      console.log(result)
       if (err) {
         console.error("Database error:", err);
         return res.json({
@@ -92,13 +89,8 @@ router.post("/student_login", async (req, res) => {
           maxAge: 24 * 60 * 60 * 1000, // 1 day
         });
 
-        await sendMail(
-            email,
-            "Login Notification to ProjectHub",
-            `<p>Hello ${result[0].name},</p><p>This is to inform you that you have successfully logged into ProjectHub at ${Time}.</p>`
-        );
-
-        return res.json({
+        // Send login success response immediately
+        res.json({
           loginStatus: true,
           message: "Login successful",
           user: {
@@ -107,6 +99,19 @@ router.post("/student_login", async (req, res) => {
             email: result[0].email,
           },
         });
+
+        // Try sending email in the background (does not block response)
+        try {
+          const Time = new Date().toLocaleString();
+          await sendMail(
+            email,
+            "Login Notification to ProjectHub",
+            `<p>Hello ${result[0].name},</p><p>This is to inform you that you have successfully logged into ProjectHub at ${Time}.</p>`
+          );
+        } catch (emailErr) {
+          console.warn("Email sending failed:", emailErr.message);
+          // Optionally log or notify admin, but do not affect login response
+        }
       } catch (bcryptError) {
         console.error("Password comparison error:", bcryptError);
         return res.json({
@@ -123,6 +128,7 @@ router.post("/student_login", async (req, res) => {
     });
   }
 });
+
 
 // Route to add a title
 router.post("/add_title", verifyToken, async (req, res) => {
