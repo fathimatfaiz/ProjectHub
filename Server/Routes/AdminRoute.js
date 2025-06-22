@@ -229,7 +229,6 @@ router.post(
         return res.json({ Status: false, Error: "Image is required" });
       }
 
-      // Email format validation
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
         return res.json({ Status: false, Error: "Invalid email format" });
@@ -256,7 +255,7 @@ router.post(
         if (err) {
           if (err.code === "ER_DUP_ENTRY") {
             if (err.message.includes("email")) {
-              return res.json({Status: false, Error: "Email already exists"});
+              return res.json({ Status: false, Error: "Email already exists" });
             }
             if (err.message.includes("registerno")) {
               return res.json({
@@ -266,19 +265,26 @@ router.post(
             }
           }
           console.error("Student add error:", err);
-          return res.json({Status: false, Error: "Failed to add student"});
+          return res.json({ Status: false, Error: "Failed to add student" });
         }
 
-        await sendMail(
-            email,
-            "Welcome to ProjectHub!",
-            `<p>Hello ${name},</p><p>Welcome to our system. Your registration number is <strong>${registerno}</strong>.</p>`
-        );
-
-        return res.json({
+        // Respond success first
+        res.json({
           Status: true,
           Message: "Student added successfully",
         });
+
+        // Send email in background
+        try {
+          await sendMail(
+            email,
+            "Welcome to ProjectHub!",
+            `<p>Hello ${name},</p><p>Welcome to our system. Your registration number is <strong>${registerno}</strong>.</p>`
+          );
+        } catch (mailErr) {
+          console.warn("Email send failed:", mailErr.message);
+          // Optionally log or notify admin
+        }
       });
     } catch (error) {
       console.error("Student add error:", error);
@@ -286,6 +292,7 @@ router.post(
     }
   }
 );
+
 
 //student table
 router.get("/student", verifyToken, async (req, res) => {
