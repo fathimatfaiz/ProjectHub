@@ -20,7 +20,7 @@ const EditStudent = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:3000/auth/category")
+      .get(`${import.meta.env.VITE_BACKEND_URL}/auth/category`)
       .then((result) => {
         if (result.data.Status) {
           setCategories(result.data.Result);

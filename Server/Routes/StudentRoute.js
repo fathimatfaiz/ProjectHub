@@ -25,6 +25,8 @@ router.post("/student_login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    console.log(email, password)
+
     // Input validation
     if (!email || !password) {
       return res.json({
@@ -45,6 +47,7 @@ router.post("/student_login", async (req, res) => {
     const sql = "SELECT id, email, password, name FROM student WHERE email = ?";
 
     con.query(sql, [email.toLowerCase()], async (err, result) => {
+      console.log(result)
       if (err) {
         console.error("Database error:", err);
         return res.json({
@@ -56,7 +59,7 @@ router.post("/student_login", async (req, res) => {
       if (result.length === 0) {
         return res.json({
           loginStatus: false,
-          Error: "Invalid email or password",
+          Error: "No users found",
         });
       }
 
@@ -92,7 +95,7 @@ router.post("/student_login", async (req, res) => {
         await sendMail(
             email,
             "Login Notification to ProjectHub",
-            `<p>Hello ${name},</p><p>This is to inform you that you have successfully logged into ProjectHub at ${Time}.</p>`
+            `<p>Hello ${result[0].name},</p><p>This is to inform you that you have successfully logged into ProjectHub at ${Time}.</p>`
         );
 
         return res.json({

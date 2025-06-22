@@ -14,16 +14,16 @@ const Student = () => {
     .catch((err) => console.log(err));
 
 
-    // axios
-    //   .get("http://localhost:3000/auth/student")
-    //   .then((result) => {
-    //     if (result.data.Status) {
-    //       setStudent(result.data.Result);
-    //     } else {
-    //       alert(result.data.Error);
-    //     }
-    //   })
-    //   .catch((err) => console.log(err));
+    axios
+      .get("http://localhost:3000/auth/student")
+      .then((result) => {
+        if (result.data.Status) {
+          setStudent(result.data.Result);
+        } else {
+          alert(result.data.Error);
+        }
+      })
+      .catch((err) => console.log(err));
   }, []);
 
   const handleDelete = (id) => {
